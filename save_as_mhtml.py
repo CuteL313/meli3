@@ -12,24 +12,10 @@ def sanitize_filename(name: str) -> str:
     return re.sub(r'[\\/*?:"<>|]', "_", name)
 
 async def save_mhtml(url: str, output_file: str):
-    """Save webpage as MHTML, waiting for possible JS redirects."""
+    """Save webpage as MHTML."""
     browser = await launch(headless=True, args=['--no-sandbox'])
     page = await browser.newPage()
-    
-    # 1. Navigate and wait for 'load' event first
-    await page.goto(url, waitUntil='load')
-    
-    # 2. Wait a bit for JavaScript redirects to settle
-    #    (This is the key part to catch JS-based redirects)
-    await page.waitFor(3000)  # Wait 3 seconds for any JS redirect to happen
-    
-    # 3. Now wait for network to be quiet
-    try:
-        await page.waitForNavigation(waitUntil='networkidle0', timeout=10000)
-    except:
-        pass  # No more navigation, that's fine
-    
-    # 4. Proceed to capture snapshot
+    await page.goto(url, waitUntil='networkidle0')
     mhtml_data = await page._client.send('Page.captureSnapshot', {})
     with open(output_file, 'wb') as f:
         f.write(mhtml_data['data'].encode())
