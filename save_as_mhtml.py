@@ -65,5 +65,5 @@ def main():
 
     print(f"✅ Created {zip_path} (contains {mhtml_filename})")
 
-if name == "__main__":
+if __name__ == "__main__":
     main()
